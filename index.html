@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lmnry Portal - Space Edition</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            touch-action: pan-x;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            background-color: #060913;
+            color: #ffffff;
+            overflow: hidden;
+            overscroll-behavior-x: none;
+            position: relative;
+        }
+
+        /* === BACKGROUND: SPACE & BINTANG STATIS === */
+        .space-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            background: 
+                radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.08) 0%, rgba(120, 50, 255, 0.05) 50%, transparent 80%),
+                radial-gradient(2px 2px at 20px 30px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 150px 150px, rgba(255, 255, 255, 0.9), rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 300px 70px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 450px 220px, rgba(0, 212, 255, 0.9), rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 80px 350px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 250px 480px, rgba(255, 255, 255, 0.9), rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 600px 120px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 720px 310px, rgba(0, 212, 255, 0.8), rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 850px 50px, #ffffff, rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 800px 600px;
+        }
+
+        .stars-static {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.7;
+            background: 
+                radial-gradient(2px 2px at 100px 80px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 350px 280px, #00d2ff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 520px 420px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 780px 180px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 900px 500px, #00d2ff, rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 700px 500px;
+        }
+
+        /* === WIDGET SLIDER & NAVIGATION === */
+        .slider-wrapper {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            overflow-x: scroll;
+            overflow-y: hidden;
+            scroll-snap-type: x mandatory;
+            scroll-snap-stop: always;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-x: contain;
+        }
+
+        .slider-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+
+        .slide {
+            flex: 0 0 100vw;
+            width: 100vw;
+            height: 100vh;
+            scroll-snap-align: center;
+            scroll-snap-stop: always;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 24px;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .content-area {
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            background: rgba(11, 14, 20, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero-title {
+            font-size: 34px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 50%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0 0 15px 0;
+            text-transform: uppercase;
+        }
+
+        .brand-title {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0 0 10px 0;
+        }
+
+        .sub-text {
+            color: #a0aec0;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .welcome-badge {
+            display: inline-block;
+            background: rgba(0, 212, 255, 0.15);
+            color: #00d2ff;
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        /* CONTAINER CANVAS / PREVIEW */
+        .preview-container {
+            background: rgba(15, 20, 29, 0.8);
+            border: 2px dashed rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            min-height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        canvas {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+
+        #photo-canvas {
+            max-height: 250px;
+            display: none;
+        }
+
+        .placeholder-text {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .upload-btn {
+            display: inline-block;
+            background: rgba(0, 212, 255, 0.15);
+            border: 1px solid #00d2ff;
+            color: #00d2ff;
+            padding: 12px 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+            text-decoration: none;
+        }
+
+        .upload-btn:hover {
+            background: #00d2ff;
+            color: #0b0e14;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 14px 20px;
+            background: rgba(15, 20, 29, 0.9);
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            border-radius: 50px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-action:hover:not(:disabled) {
+            background: #00d2ff;
+            color: #0b0e14;
+        }
+
+        .btn-action:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .dots-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: background 0.3s ease, transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .dot.active {
+            background: #00d2ff;
+            transform: scale(1.2);
+        }
+
+        .swipe-hint {
+            position: absolute;
+            bottom: 45px;
+            color: #718096;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        video {
+            max-width: 100%;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .hero-title {
+                font-size: 26px;
+            }
+            .content-area {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="space-bg"></div>
+    <div class="stars-static"></div>
+
+    <div class="slider-wrapper" id="slider" onscroll="updateDots()">
+        
+        <!-- SLIDE 0: WELCOME -->
+        <div class="slide" id="slide-0">
+            <div class="content-area">
+                <span class="welcome-badge">✨ Web Portal</span>
+                <h1 class="hero-title">WELCOME TO PORTAL LMNRY</h1>
+                <p class="sub-text">
+                    Nikmati akses ke alat pengolahan foto HD, unduhan video media sosial langsung, dan konverter media MP4 ke Audio dalam satu platform.
+                </p>
+                <div style="margin-top: 25px;">
+                    <button class="upload-btn" onclick="goToSlide(1)">Mulai Jelajahi ➔</button>
+                </div>
+            </div>
+            <div class="swipe-hint">Geser ke kiri ➔</div>
+        </div>
+
+        <!-- SLIDE 1: OVERVIEW -->
+        <div class="slide" id="slide-1">
+            <div class="content-area">
+                <span class="welcome-badge">📌 OVERVIEW</span>
+                <h1 class="brand-title">Portal Features</h1>
+                <p class="sub-text">Portal serbaguna untuk kebutuhan pengolahan media digital kamu.</p>
+                
+                <div class="preview-container" style="flex-direction: column; text-align: left; justify-content: flex-start;">
+                    <h3 style="color:#00d2ff; margin-top:0;">Daftar Fitur:</h3>
+                    <ul style="color: #a0aec0; font-size: 14px; line-height: 1.8;">
+                        <li><strong>Slide 2:</strong> HD Photo Sharpening - Memperjelas detail foto secara lokal.</li>
+                        <li><strong>Slide 3:</strong> Direct Video Downloader - Mengunduh video langsung di dalam portal.</li>
+                        <li><strong>Slide 4:</strong> MP4 to MP3 Converter - Mengekstrak suara dari file video.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="swipe-hint">Geser ke kiri ➔</div>
+        </div>
+
+        <!-- SLIDE 2: PHOTO ENHANCER -->
+        <div class="slide" id="slide-2">
+            <div class="content-area">
+                <span class="welcome-badge">✨ Tool 01</span>
+                <h1 class="brand-title">Photo HD</h1>
+                <p class="sub-text">Unggah foto kamu untuk memberikan efek penajaman (sharpening) & kejernihan warna secara instan.</p>
+
+                <label for="image-upload" class="upload-btn">📁 Pilih Foto</label>
+                <input type="file" id="image-upload" accept="image/*" onchange="loadPhoto(event)">
+
+                <div class="preview-container">
+                    <span class="placeholder-text" id="placeholder">Belum ada foto yang dipilih</span>
+                    <canvas id="photo-canvas"></canvas>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-action" id="btn-enhance" disabled onclick="applyHD()">✨ Tingkatkan Kejelasan (HD)</button>
+                    <button class="btn-action" id="btn-download" disabled onclick="downloadPhoto()">💾 Unduh Foto</button>
+                </div>
+            </div>
+            <div class="swipe-hint">Geser ke kiri ➔</div>
+        </div>
+
+        <!-- SLIDE 3: DIRECT VIDEO DOWNLOADER -->
+        <div class="slide" id="slide-3">
+            <div class="content-area">
+                <span class="welcome-badge">📥 Tool 02</span>
+                <h1 class="brand-title">Direct Video Downloader</h1>
+                <p class="sub-text">Tempel tautan video (TikTok/Instagram/YouTube) untuk melihat preview & mengunduh langsung di aplikasi.</p>
+
+                <input type="url" id="video-url" class="url-input" placeholder="Tempel link video di sini..." autocomplete="off">
+
+                <div class="action-buttons">
+                    <button class="btn-action" id="btn-fetch-video" onclick="fetchVideoDirectly()">🔍 Proses & Unduh Video</button>
+                </div>
+
+                <p id="dl-status-text" style="color: #a0aec0; font-size: 13px; margin-top: 15px; display: none;"></p>
+
+                <div id="video-result" style="margin-top: 15px; display: none;">
+                    <video id="video-preview-player" controls style="display:none; width: 100%;"></video>
+                    <button id="dl-direct-btn" class="upload-btn" onclick="saveVideoFile()">💾 Unduh Video Ke Perangkat</button>
+                </div>
+            </div>
+            <div class="swipe-hint">Geser ke kiri ➔</div>
+        </div>
+
+        <!-- SLIDE 4: MP4 TO MP3 CONVERTER -->
+        <div class="slide" id="slide-4">
+            <div class="content-area">
+                <span class="welcome-badge">🎵 Tool 03</span>
+                <h1 class="brand-title">MP4 to MP3 Converter</h1>
+                <p class="sub-text">Ekstrak Audio/Suara dari video MP4 kamu secara instan tanpa mengunggah file ke server.</p>
+
+                <label for="video-file-input" class="upload-btn">🎬 Pilih File Video (MP4)</label>
+                <input type="file" id="video-file-input" accept="video/mp4,video/*" onchange="handleVideoSelect(event)">
+
+                <div class="preview-container" style="flex-direction: column; padding: 20px;">
+                    <span class="placeholder-text" id="converter-status">Pilih file video MP4 untuk memulai</span>
+                    <audio id="audio-preview" controls style="display: none; width: 100%; margin-top: 15px;"></audio>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-action" id="btn-convert" disabled onclick="convertMp4ToAudio()">⚡ Ekstrak Audio</button>
+                    <button class="btn-action" id="btn-download-audio" disabled onclick="downloadAudio()">💾 Unduh Audio</button>
+                </div>
+            </div>
+            <div class="swipe-hint">⬅️ Geser ke kanan untuk kembali</div>
+        </div>
+
+    </div>
+
+    <div class="dots-container">
+        <div class="dot active" onclick="goToSlide(0)"></div>
+        <div class="dot" onclick="goToSlide(1)"></div>
+        <div class="dot" onclick="goToSlide(2)"></div>
+        <div class="dot" onclick="goToSlide(3)"></div>
+        <div class="dot" onclick="goToSlide(4)"></div>
+    </div>
+
+    <script>
+        // === PHOTO ENHANCER LOGIC ===
+        const photoCanvas = document.getElementById('photo-canvas');
+        const photoCtx = photoCanvas.getContext('2d');
+        let originalImage = null;
+
+        function loadPhoto(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    originalImage = img;
+                    photoCanvas.width = img.width;
+                    photoCanvas.height = img.height;
+                    photoCtx.drawImage(img, 0, 0);
+
+                    document.getElementById('placeholder').style.display = 'none';
+                    photoCanvas.style.display = 'block';
+
+                    document.getElementById('btn-enhance').disabled = false;
+                    document.getElementById('btn-download').disabled = false;
+                }
+                img.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+
+        function applyHD() {
+            if (!originalImage) return;
+
+            const w = photoCanvas.width;
+            const h = photoCanvas.height;
+
+            photoCtx.drawImage(originalImage, 0, 0);
+
+            const imageData = photoCtx.getImageData(0, 0, w, h);
+            const data = imageData.data;
+            const outputData = photoCtx.createImageData(w, h);
+            const out = outputData.data;
+
+            for (let i = 0; i < data.length; i++) {
+                out[i] = data[i];
+            }
+
+            const kernel = [
+                 0, -1,  0,
+                -1,  5, -1,
+                 0, -1,  0
+            ];
+
+            for (let y = 1; y < h - 1; y++) {
+                for (let x = 1; x < w - 1; x++) {
+                    let r = 0, g = 0, b = 0;
+
+                    for (let ky = -1; ky <= 1; ky++) {
+                        for (let kx = -1; kx <= 1; kx++) {
+                            const px = (x + kx);
+                            const py = (y + ky);
+                            const offset = (py * w + px) * 4;
+                            const weight = kernel[(ky + 1) * 3 + (kx + 1)];
+
+                            r += data[offset] * weight;
+                            g += data[offset + 1] * weight;
+                            b += data[offset + 2] * weight;
+                        }
+                    }
+
+                    const idx = (y * w + x) * 4;
+                    out[idx]     = Math.min(255, Math.max(0, r));
+                    out[idx + 1] = Math.min(255, Math.max(0, g));
+                    out[idx + 2] = Math.min(255, Math.max(0, b));
+                    out[idx + 3] = data[idx + 3];
+                }
+            }
+
+            photoCtx.putImageData(outputData, 0, 0);
+            alert("Efek HD Sharpening berhasil diterapkan!");
+        }
+
+        function downloadPhoto() {
+            const link = document.createElement('a');
+            link.download = 'HD_Photo.png';
+            link.href = photoCanvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // === DIRECT VIDEO DOWNLOADER LOGIC ===
+        let fetchedMediaUrl = "";
+
+        async function fetchVideoDirectly() {
+            const urlInput = document.getElementById('video-url').value.trim();
+            const statusText = document.getElementById('dl-status-text');
+            const resultBox = document.getElementById('video-result');
+            const videoPlayer = document.getElementById('video-preview-player');
+            const btnFetch = document.getElementById('btn-fetch-video');
+
+            if (!urlInput) {
+                alert("Harap masukkan link video terlebih dahulu!");
+                return;
+            }
+
+            statusText.style.display = 'block';
+            statusText.style.color = '#00d2ff';
+            statusText.innerText = '⏳ Sedang mengesktrak file video langsung dari server...';
+            resultBox.style.display = 'none';
+            btnFetch.disabled = true;
+
+            try {
+                // Ekstraksi untuk TikTok via TikWM API (No Watermark Direct Video)
+                if (urlInput.includes('tiktok.com')) {
+                    const response = await fetch(`https://www.tikwm.com/api/?url=${encodeURIComponent(urlInput)}`);
+                    const json = await response.json();
+
+                    if (json.code === 0 && json.data && json.data.play) {
+                        fetchedMediaUrl = json.data.play;
+                        videoPlayer.src = fetchedMediaUrl;
+                        videoPlayer.style.display = 'block';
+                        resultBox.style.display = 'block';
+                        statusText.innerText = '✅ Video berhasil diekstrak!';
+                        statusText.style.color = '#48bb78';
+                    } else {
+                        throw new Error('Gagal mengekstrak video TikTok. Pastikan link valid.');
+                    }
+                } 
+                // Ekstraksi umum melalui proxy API tanpa redirect
+                else {
+                    const proxyApi = `https://api.download-video.workers.dev/?url=${encodeURIComponent(urlInput)}`;
+                    const res = await fetch(proxyApi);
+                    
+                    if (res.ok) {
+                        const blob = await res.blob();
+                        fetchedMediaUrl = URL.createObjectURL(blob);
+                        videoPlayer.src = fetchedMediaUrl;
+                        videoPlayer.style.display = 'block';
+                        resultBox.style.display = 'block';
+                        statusText.innerText = '✅ Video siap diunduh!';
+                        statusText.style.color = '#48bb78';
+                    } else {
+                        // Fallback API direct stream
+                        fetchedMediaUrl = `https://tikwm.com/api/?url=${encodeURIComponent(urlInput)}`;
+                        window.open(fetchedMediaUrl, '_self');
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                statusText.innerText = '❌ Gagal memproses link. Pastikan akun tidak privat atau format link valid.';
+                statusText.style.color = '#f56565';
+            } finally {
+                btnFetch.disabled = false;
+            }
+        }
+
+        async function saveVideoFile() {
+            if (!fetchedMediaUrl) return;
+
+            const statusText = document.getElementById('dl-status-text');
+            statusText.innerText = '⏳ Mengunduh file ke galeri/penyimpanan...';
+
+            try {
+                const response = await fetch(fetchedMediaUrl);
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                link.download = `Lmnry_Video_${Date.now()}.mp4`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(blobUrl);
+
+                statusText.innerText = '🎉 Unduhan Selesai!';
+            } catch (e) {
+                // Direct fallback jika CORS memblokir Fetch Blob
+                const a = document.createElement('a');
+                a.href = fetchedMediaUrl;
+                a.download = 'video.mp4';
+                a.target = '_blank';
+                a.click();
+            }
+        }
+
+        // === MP4 TO MP3 CONVERTER LOGIC ===
+        let selectedVideoFile = null;
+        let convertedAudioUrl = null;
+
+        function handleVideoSelect(event) {
+            const file = event.target.files[0];
+            const statusElem = document.getElementById('converter-status');
+            const audioPreview = document.getElementById('audio-preview');
+
+            if (!file) return;
+
+            selectedVideoFile = file;
+            statusElem.innerText = `File Terpilih: ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+            statusElem.style.color = '#00d2ff';
+
+            audioPreview.style.display = 'none';
+            document.getElementById('btn-convert').disabled = false;
+            document.getElementById('btn-download-audio').disabled = true;
+        }
+
+        async function convertMp4ToAudio() {
+            if (!selectedVideoFile) return;
+
+            const statusElem = document.getElementById('converter-status');
+            const btnConvert = document.getElementById('btn-convert');
+            const audioPreview = document.getElementById('audio-preview');
+
+            statusElem.innerText = "Mengekstrak audio... Harap tunggu sebentar.";
+            statusElem.style.color = "#f6e05e";
+            btnConvert.disabled = true;
+
+            try {
+                const arrayBuffer = await selectedVideoFile.arrayBuffer();
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+                const wavBlob = audioBufferToWav(audioBuffer);
+                convertedAudioUrl = URL.createObjectURL(wavBlob);
+
+                audioPreview.src = convertedAudioUrl;
+                audioPreview.style.display = 'block';
+
+                statusElem.innerText = "Ekstraksi Berhasil! Kamu bisa mendengarkan atau mengunduhnya.";
+                statusElem.style.color = "#48bb78";
+
+                document.getElementById('btn-download-audio').disabled = false;
+            } catch (error) {
+                console.error(error);
+                statusElem.innerText = "Gagal memproses file. Pastikan file format MP4/Video valid.";
+                statusElem.style.color = "#f56565";
+                btnConvert.disabled = false;
+            }
+        }
+
+        function downloadAudio() {
+            if (!convertedAudioUrl) return;
+            const link = document.createElement('a');
+            const originalName = selectedVideoFile ? selectedVideoFile.name.split('.')[0] : 'audio';
+            link.download = `${originalName}_extracted.wav`;
+            link.href = convertedAudioUrl;
+            link.click();
+        }
+
+        function audioBufferToWav(buffer) {
+            let numOfChan = buffer.numberOfChannels,
+                len = buffer.length * numOfChan * 2 + 44,
+                out = new DataView(new ArrayBuffer(len)),
+                channels = [],
+                sampleRate = buffer.sampleRate,
+                offset = 0,
+                pos = 0;
+
+            function setUint16(data) {
+                out.setUint16(pos, data, true);
+                pos += 2;
+            }
+
+            function setUint32(data) {
+                out.setUint32(pos, data, true);
+                pos += 4;
+            }
+
+            setUint32(0x46464952); // "RIFF"
+            setUint32(len - 8);
+            setUint32(0x45564157); // "WAVE"
+            setUint32(0x20746d66); // "fmt " chunk
+            setUint32(16); // length
+            setUint16(1); // raw PCM
+            setUint16(numOfChan);
+            setUint32(sampleRate);
+            setUint32(sampleRate * 2 * numOfChan);
+            setUint16(numOfChan * 2);
+            setUint16(16);
+            setUint32(0x61746164); // "data"
+            setUint32(len - pos - 4);
+
+            for (let i = 0; i < buffer.numberOfChannels; i++)
+                channels.push(buffer.getChannelData(i));
+
+            while (offset < buffer.length) {
+                for (let i = 0; i < numOfChan; i++) {
+                    let sample = Math.max(-1, Math.min(1, channels[i][offset]));
+                    sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0;
+                    out.setInt16(pos, sample, true);
+                    pos += 2;
+                }
+                offset++;
+            }
+
+            return new Blob([out], { type: "audio/wav" });
+        }
+
+        // === SLIDER & DOTS NAVIGATION LOGIC ===
+        const slider = document.getElementById('slider');
+
+        function updateDots() {
+            const dots = document.querySelectorAll('.dot');
+            const pageIndex = Math.round(slider.scrollLeft / window.innerWidth);
+
+            dots.forEach((dot, index) => {
+                if (index === pageIndex) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        }
+
+        function goToSlide(index) {
+            slider.scrollTo({
+                left: window.innerWidth * index,
+                behavior: 'smooth'
+            });
+        }
+    </script>
+</body>
+</html>
